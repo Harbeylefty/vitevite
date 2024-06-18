@@ -23,7 +23,7 @@ jobs:
         run: npm run build --if-present
       - name: DEPLOY TO SERVER
         uses: easingthemes/ssh-deploy@main
-        env: 
+        with: 
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.USERNAME }}
@@ -37,7 +37,7 @@ jobs:
           script: |
             cd home
             sudo apt-get update
-            sudo apt-get install nginx
+            sudo apt-get install nginx -y
       - name: clear contents of var/www/html folder
         run: sudo rm -rf /var/www/html/*
       - name: copy dist file to var/www/html folder
