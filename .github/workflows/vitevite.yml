@@ -1,0 +1,39 @@
+name: vite-deploy
+on: 
+  workflow_dispatch: {}
+jobs: 
+  build: 
+    strategy: 
+      matrix:
+        node-version: [20.x]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout file
+        uses: actions/checkout@v4
+      - name: install nodeJS
+        uses: actions/setup-node@v4
+      - name: install dependencies
+        run: npm ci
+      - name: build code
+        run: npm run build --if-present
+      - name: DEPLOY TO SERVER
+        uses: easingthemes@ssh-deploy@main
+        env: 
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
+      - name: Execute using ssh remote commands
+        uses: appleboy/ssh-action@v1.0.3
+        with: 
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd home
+            sudo apt-get update
+            sudo apt-get install nginx
+      - name: clear contents of var/www/html folder
+        run: sudo rm -rf /var/www/html/*
+      - name: copy dist file to var/www/html folder
+        run: sudo cp -r dist/* /var/www/html
